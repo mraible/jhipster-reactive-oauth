@@ -1,16 +1,12 @@
 package com.mycompany.myapp.config;
 
-import static org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers.pathMatchers;
-
 import com.mycompany.myapp.GeneratedByJHipster;
 import com.mycompany.myapp.security.AuthoritiesConstants;
+import com.mycompany.myapp.security.CustomClaimConverter;
 import com.mycompany.myapp.security.SecurityUtils;
 import com.mycompany.myapp.security.oauth2.AudienceValidator;
 import com.mycompany.myapp.security.oauth2.JwtGrantedAuthorityConverter;
 import io.github.jhipster.config.JHipsterProperties;
-import io.github.jhipster.web.filter.reactive.CookieCsrfFilter;
-import java.util.HashSet;
-import java.util.Set;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
@@ -34,14 +30,18 @@ import org.springframework.security.oauth2.jwt.*;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.ReactiveJwtAuthenticationConverterAdapter;
 import org.springframework.security.web.server.SecurityWebFilterChain;
-import org.springframework.security.web.server.csrf.CookieServerCsrfTokenRepository;
-import org.springframework.security.web.server.header.ReferrerPolicyServerHttpHeadersWriter;
 import org.springframework.security.web.server.header.ReferrerPolicyServerHttpHeadersWriter;
 import org.springframework.security.web.server.savedrequest.NoOpServerRequestCache;
 import org.springframework.security.web.server.util.matcher.NegatedServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.OrServerWebExchangeMatcher;
+import org.springframework.web.filter.reactive.ServerWebExchangeContextFilter;
 import org.zalando.problem.spring.webflux.advice.security.SecurityProblemSupport;
 import reactor.core.publisher.Mono;
+
+import java.util.HashSet;
+import java.util.Set;
+
+import static org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers.pathMatchers;
 
 @EnableWebFluxSecurity
 @EnableReactiveMethodSecurity
@@ -65,6 +65,8 @@ public class SecurityConfiguration {
     public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
         // @formatter:off
         http
+            // Filter to put the ServerWebExchange in the Reactor context
+            .addFilterAt(new ServerWebExchangeContextFilter(), SecurityWebFiltersOrder.FIRST)
             .securityMatcher(new NegatedServerWebExchangeMatcher(new OrServerWebExchangeMatcher(
                 pathMatchers("/app/**", "/i18n/**", "/content/**", "/swagger-ui/index.html", "/v2/api-docs", "/v3/api-docs", "/test/**"),
                 pathMatchers(HttpMethod.OPTIONS, "/**")
@@ -119,6 +121,9 @@ public class SecurityConfiguration {
     public ReactiveOAuth2UserService<OidcUserRequest, OidcUser> oidcUserService() {
         final OidcReactiveOAuth2UserService delegate = new OidcReactiveOAuth2UserService();
 
+        // This should register CustomClaimConverter but it doesn't work
+        delegate.setClaimTypeConverterFactory(CustomClaimConverter::new);
+
         return userRequest -> {
             // Delegate to the default implementation for loading a user
             return delegate
@@ -155,6 +160,8 @@ public class SecurityConfiguration {
         OAuth2TokenValidator<Jwt> withAudience = new DelegatingOAuth2TokenValidator<>(withIssuer, audienceValidator);
 
         jwtDecoder.setJwtValidator(withAudience);
+        // TODO: uncomment to successfully register CustomClaimConverter
+//        jwtDecoder.setClaimSetConverter(new CustomClaimConverter(null));
 
         return jwtDecoder;
     }
