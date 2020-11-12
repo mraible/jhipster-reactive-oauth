@@ -1,15 +1,14 @@
 package com.mycompany.myapp.security.oauth2;
 
-import com.mycompany.myapp.GeneratedByJHipster;
 import com.mycompany.myapp.security.SecurityUtils;
-import java.util.Collection;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;
 
+import java.util.Collection;
+
 @Component
-@GeneratedByJHipster
 public class JwtGrantedAuthorityConverter implements Converter<Jwt, Collection<GrantedAuthority>> {
 
     public JwtGrantedAuthorityConverter() {

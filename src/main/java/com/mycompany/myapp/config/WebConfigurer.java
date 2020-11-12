@@ -1,7 +1,6 @@
 package com.mycompany.myapp.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mycompany.myapp.GeneratedByJHipster;
 import io.github.jhipster.config.JHipsterProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +22,6 @@ import org.zalando.problem.spring.webflux.advice.ProblemHandling;
  * Configuration of web application with Servlet 3.0 APIs.
  */
 @Configuration
-@GeneratedByJHipster
 public class WebConfigurer implements WebFluxConfigurer {
 
     private final Logger log = LoggerFactory.getLogger(WebConfigurer.class);
@@ -43,8 +41,6 @@ public class WebConfigurer implements WebFluxConfigurer {
             source.registerCorsConfiguration("/api/**", config);
             source.registerCorsConfiguration("/management/**", config);
             source.registerCorsConfiguration("/v2/api-docs", config);
-            source.registerCorsConfiguration("/v3/api-docs", config);
-            source.registerCorsConfiguration("/swagger-resources", config);
         }
         return new CorsWebFilter(source);
     }
@@ -66,4 +62,5 @@ public class WebConfigurer implements WebFluxConfigurer {
     public WebExceptionHandler problemExceptionHandler(ObjectMapper mapper, ProblemHandling problemHandling) {
         return new ProblemExceptionHandler(mapper, problemHandling);
     }
+
 }

@@ -1,8 +1,5 @@
 package com.mycompany.myapp.security;
 
-import com.mycompany.myapp.GeneratedByJHipster;
-import java.util.*;
-import java.util.stream.Collectors;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -13,13 +10,16 @@ import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import reactor.core.publisher.Mono;
 
+import java.util.*;
+import java.util.stream.Collectors;
+
 /**
  * Utility class for Spring Security.
  */
-@GeneratedByJHipster
 public final class SecurityUtils {
 
-    private SecurityUtils() {}
+    private SecurityUtils() {
+    }
 
     /**
      * Get the login of the current user.
@@ -27,8 +27,7 @@ public final class SecurityUtils {
      * @return the login of the current user.
      */
     public static Mono<String> getCurrentUserLogin() {
-        return ReactiveSecurityContextHolder
-            .getContext()
+        return ReactiveSecurityContextHolder.getContext()
             .map(SecurityContext::getAuthentication)
             .flatMap(authentication -> Mono.justOrEmpty(extractPrincipal(authentication)));
     }
@@ -40,7 +39,7 @@ public final class SecurityUtils {
             UserDetails springSecurityUser = (UserDetails) authentication.getPrincipal();
             return springSecurityUser.getUsername();
         } else if (authentication instanceof JwtAuthenticationToken) {
-            return (String) ((JwtAuthenticationToken) authentication).getToken().getClaims().get("preferred_username");
+            return (String) ((JwtAuthenticationToken)authentication).getToken().getClaims().get("preferred_username");
         } else if (authentication.getPrincipal() instanceof DefaultOidcUser) {
             Map<String, Object> attributes = ((DefaultOidcUser) authentication.getPrincipal()).getAttributes();
             if (attributes.containsKey("preferred_username")) {
@@ -52,17 +51,20 @@ public final class SecurityUtils {
         return null;
     }
 
+
     /**
      * Check if a user is authenticated.
      *
      * @return true if the user is authenticated, false otherwise.
      */
     public static Mono<Boolean> isAuthenticated() {
-        return ReactiveSecurityContextHolder
-            .getContext()
+        return ReactiveSecurityContextHolder.getContext()
             .map(SecurityContext::getAuthentication)
             .map(Authentication::getAuthorities)
-            .map(authorities -> authorities.stream().map(GrantedAuthority::getAuthority).noneMatch(AuthoritiesConstants.ANONYMOUS::equals));
+            .map(authorities -> authorities.stream()
+                .map(GrantedAuthority::getAuthority)
+                .noneMatch(AuthoritiesConstants.ANONYMOUS::equals)
+            );
     }
 
     /**
@@ -74,11 +76,13 @@ public final class SecurityUtils {
      * @return true if the current user has the authority, false otherwise.
      */
     public static Mono<Boolean> isCurrentUserInRole(String authority) {
-        return ReactiveSecurityContextHolder
-            .getContext()
+        return ReactiveSecurityContextHolder.getContext()
             .map(SecurityContext::getAuthentication)
             .map(Authentication::getAuthorities)
-            .map(authorities -> authorities.stream().map(GrantedAuthority::getAuthority).anyMatch(authority::equals));
+            .map(authorities -> authorities.stream()
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch(authority::equals)
+            );
     }
 
     public static List<GrantedAuthority> extractAuthorityFromClaims(Map<String, Object> claims) {
@@ -87,10 +91,14 @@ public final class SecurityUtils {
 
     @SuppressWarnings("unchecked")
     private static Collection<String> getRolesFromClaims(Map<String, Object> claims) {
-        return (Collection<String>) claims.getOrDefault("groups", claims.getOrDefault("roles", new ArrayList<>()));
+        return (Collection<String>) claims.getOrDefault("groups",
+            claims.getOrDefault("roles", new ArrayList<>()));
     }
 
     private static List<GrantedAuthority> mapRolesToGrantedAuthorities(Collection<String> roles) {
-        return roles.stream().filter(role -> role.startsWith("ROLE_")).map(SimpleGrantedAuthority::new).collect(Collectors.toList());
+        return roles.stream()
+            .filter(role -> role.startsWith("ROLE_"))
+            .map(SimpleGrantedAuthority::new)
+            .collect(Collectors.toList());
     }
 }

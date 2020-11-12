@@ -1,6 +1,5 @@
 package com.mycompany.myapp.config;
 
-import com.mycompany.myapp.GeneratedByJHipster;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
@@ -10,5 +9,5 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * See {@link io.github.jhipster.config.JHipsterProperties} for a good example.
  */
 @ConfigurationProperties(prefix = "application", ignoreUnknownFields = false)
-@GeneratedByJHipster
-public class ApplicationProperties {}
+public class ApplicationProperties {
+}

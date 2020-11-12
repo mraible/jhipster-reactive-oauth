@@ -80,7 +80,6 @@ spring:
 # ===================================================================
 server:
   port: 8081
-  shutdown: graceful # see https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#boot-features-graceful-shutdown
   compression:
     enabled: true
     mime-types: text/html,text/xml,text/plain,text/css, application/javascript, application/json
@@ -109,6 +108,9 @@ jhipster:
       host: localhost
       port: 5000
       queue-size: 512
+  audit-events:
+    retention-period: 30 # Number of days before audit events are deleted.
+
 # ===================================================================
 # Application specific properties
 # Add your own application properties here, see the ApplicationProperties class

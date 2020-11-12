@@ -1,12 +1,10 @@
 package com.mycompany.myapp.web.rest.vm;
 
-import com.mycompany.myapp.GeneratedByJHipster;
 import com.mycompany.myapp.service.dto.UserDTO;
 
 /**
  * View Model extending the UserDTO, which is meant to be used in the user management UI.
  */
-@GeneratedByJHipster
 public class ManagedUserVM extends UserDTO {
 
     public ManagedUserVM() {

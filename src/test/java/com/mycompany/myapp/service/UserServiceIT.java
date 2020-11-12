@@ -1,8 +1,5 @@
 package com.mycompany.myapp.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import com.mycompany.myapp.GeneratedByJHipster;
 import com.mycompany.myapp.JhipsterApp;
 import com.mycompany.myapp.config.Constants;
 import com.mycompany.myapp.config.TestSecurityConfiguration;
@@ -10,11 +7,7 @@ import com.mycompany.myapp.domain.User;
 import com.mycompany.myapp.repository.UserRepository;
 import com.mycompany.myapp.security.AuthoritiesConstants;
 import com.mycompany.myapp.service.dto.UserDTO;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,12 +20,19 @@ import org.springframework.security.oauth2.client.authentication.OAuth2Authentic
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
+import java.util.List;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
 /**
  * Integration tests for {@link UserService}.
  */
-@SpringBootTest(classes = { JhipsterApp.class, TestSecurityConfiguration.class })
-@GeneratedByJHipster
-class UserServiceIT {
+@SpringBootTest(classes = {JhipsterApp.class, TestSecurityConfiguration.class})
+public class UserServiceIT {
 
     private static final String DEFAULT_LOGIN = "johndoe";
 
@@ -77,19 +77,22 @@ class UserServiceIT {
     }
 
     @Test
-    void assertThatAnonymousUserIsNotGet() {
+    public void assertThatAnonymousUserIsNotGet() {
         user.setId(Constants.ANONYMOUS_USER);
         user.setLogin(Constants.ANONYMOUS_USER);
         if (!userRepository.findOneByLogin(Constants.ANONYMOUS_USER).blockOptional().isPresent()) {
             userRepository.save(user).block();
         }
         final PageRequest pageable = PageRequest.of(0, (int) userRepository.count().block().intValue());
-        final List<UserDTO> allManagedUsers = userService.getAllManagedUsers(pageable).collectList().block();
-        assertThat(allManagedUsers.stream().noneMatch(user -> Constants.ANONYMOUS_USER.equals(user.getLogin()))).isTrue();
+        final List<UserDTO> allManagedUsers = userService.getAllManagedUsers(pageable)
+            .collectList().block();
+        assertThat(allManagedUsers.stream()
+            .noneMatch(user -> Constants.ANONYMOUS_USER.equals(user.getLogin())))
+            .isTrue();
     }
 
     @Test
-    void testDefaultUserDetails() {
+    public void testDefaultUserDetails() {
         OAuth2AuthenticationToken authentication = createMockOAuth2AuthenticationToken(userDetails);
         UserDTO userDTO = userService.getUserFromAuthentication(authentication).block();
 
@@ -104,7 +107,7 @@ class UserServiceIT {
     }
 
     @Test
-    void testUserDetailsWithUsername() {
+    public void testUserDetailsWithUsername() {
         userDetails.put("preferred_username", "TEST");
 
         OAuth2AuthenticationToken authentication = createMockOAuth2AuthenticationToken(userDetails);
@@ -114,7 +117,7 @@ class UserServiceIT {
     }
 
     @Test
-    void testUserDetailsWithLangKey() {
+    public void testUserDetailsWithLangKey() {
         userDetails.put("langKey", DEFAULT_LANGKEY);
         userDetails.put("locale", "en-US");
 
@@ -125,7 +128,7 @@ class UserServiceIT {
     }
 
     @Test
-    void testUserDetailsWithLocale() {
+    public void testUserDetailsWithLocale() {
         userDetails.put("locale", "it-IT");
 
         OAuth2AuthenticationToken authentication = createMockOAuth2AuthenticationToken(userDetails);
@@ -135,7 +138,7 @@ class UserServiceIT {
     }
 
     @Test
-    void testUserDetailsWithUSLocaleUnderscore() {
+    public void testUserDetailsWithUSLocaleUnderscore() {
         userDetails.put("locale", "en_US");
 
         OAuth2AuthenticationToken authentication = createMockOAuth2AuthenticationToken(userDetails);
@@ -145,7 +148,7 @@ class UserServiceIT {
     }
 
     @Test
-    void testUserDetailsWithUSLocaleDash() {
+    public void testUserDetailsWithUSLocaleDash() {
         userDetails.put("locale", "en-US");
 
         OAuth2AuthenticationToken authentication = createMockOAuth2AuthenticationToken(userDetails);
@@ -156,11 +159,7 @@ class UserServiceIT {
 
     private OAuth2AuthenticationToken createMockOAuth2AuthenticationToken(Map<String, Object> userDetails) {
         Collection<GrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority(AuthoritiesConstants.ANONYMOUS));
-        UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
-            Constants.ANONYMOUS_USER,
-            Constants.ANONYMOUS_USER,
-            authorities
-        );
+        UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(Constants.ANONYMOUS_USER, Constants.ANONYMOUS_USER, authorities);
         usernamePasswordAuthenticationToken.setDetails(userDetails);
         OAuth2User user = new DefaultOAuth2User(authorities, userDetails, "sub");
 

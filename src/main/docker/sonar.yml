@@ -1,9 +1,7 @@
-# This configuration is intended for development purpose, it's **your** responsibility to harden it for production
-version: '3.8'
+version: '2'
 services:
   jhipster-sonar:
-    image: sonarqube:8.5.1-community
-    # If you want to expose these ports outside your dev PC,
-    # remove the "127.0.0.1:" prefix
+    image: sonarqube:8.3.1-community
     ports:
-      - 127.0.0.1:9001:9000
+      - 9001:9000
+      - 9092:9092

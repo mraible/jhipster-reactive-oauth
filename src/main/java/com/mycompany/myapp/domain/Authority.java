@@ -1,18 +1,16 @@
 package com.mycompany.myapp.domain;
 
-import com.mycompany.myapp.GeneratedByJHipster;
-import java.io.Serializable;
-import java.util.Objects;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
+import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * An authority (a security role) used by Spring Security.
  */
 @Document(collection = "jhi_authority")
-@GeneratedByJHipster
 public class Authority implements Serializable {
 
     private static final long serialVersionUID = 1L;

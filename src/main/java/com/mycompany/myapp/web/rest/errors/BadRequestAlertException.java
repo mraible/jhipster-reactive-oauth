@@ -1,13 +1,12 @@
 package com.mycompany.myapp.web.rest.errors;
 
-import com.mycompany.myapp.GeneratedByJHipster;
-import java.net.URI;
-import java.util.HashMap;
-import java.util.Map;
 import org.zalando.problem.AbstractThrowableProblem;
 import org.zalando.problem.Status;
 
-@GeneratedByJHipster
+import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
+
 public class BadRequestAlertException extends AbstractThrowableProblem {
 
     private static final long serialVersionUID = 1L;

@@ -1,16 +1,13 @@
 package com.mycompany.myapp.web.rest;
 
-import com.mycompany.myapp.GeneratedByJHipster;
 import com.mycompany.myapp.config.Constants;
 import com.mycompany.myapp.security.AuthoritiesConstants;
 import com.mycompany.myapp.service.UserService;
 import com.mycompany.myapp.service.dto.UserDTO;
+
 import io.github.jhipster.web.util.HeaderUtil;
 import io.github.jhipster.web.util.PaginationUtil;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import javax.validation.constraints.Pattern;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,6 +22,10 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Arrays;
 
 /**
  * REST controller for managing users.
@@ -52,7 +53,6 @@ import reactor.core.publisher.Mono;
  */
 @RestController
 @RequestMapping("/api")
-@GeneratedByJHipster
 public class UserResource {
 
     private final Logger log = LoggerFactory.getLogger(UserResource.class);
@@ -75,12 +75,13 @@ public class UserResource {
      */
     @GetMapping("/users")
     public Mono<ResponseEntity<Flux<UserDTO>>> getAllUsers(ServerHttpRequest request, Pageable pageable) {
-        return userService
-            .countManagedUsers()
+
+        return userService.countManagedUsers()
             .map(total -> new PageImpl<>(new ArrayList<>(), pageable, total))
             .map(page -> PaginationUtil.generatePaginationHttpHeaders(UriComponentsBuilder.fromHttpRequest(request), page))
             .map(headers -> ResponseEntity.ok().headers(headers).body(userService.getAllManagedUsers(pageable)));
     }
+
 
     /**
      * Gets a list of all roles.
@@ -98,11 +99,10 @@ public class UserResource {
      * @param login the login of the user to find.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the "login" user, or with status {@code 404 (Not Found)}.
      */
-    @GetMapping("/users/{login}")
+    @GetMapping("/users/{login:" + Constants.LOGIN_REGEX + "}")
     public Mono<UserDTO> getUser(@PathVariable String login) {
         log.debug("REST request to get User : {}", login);
-        return userService
-            .getUserWithAuthoritiesByLogin(login)
+        return userService.getUserWithAuthoritiesByLogin(login)
             .map(UserDTO::new)
             .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)));
     }

@@ -1,6 +1,5 @@
 package com.mycompany.myapp.config;
 
-import com.mycompany.myapp.GeneratedByJHipster;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.format.datetime.standard.DateTimeFormatterRegistrar;
@@ -10,7 +9,6 @@ import org.springframework.web.reactive.config.WebFluxConfigurer;
  * Configure the converters to use the ISO format for dates by default.
  */
 @Configuration
-@GeneratedByJHipster
 public class DateTimeFormatConfiguration implements WebFluxConfigurer {
 
     @Override

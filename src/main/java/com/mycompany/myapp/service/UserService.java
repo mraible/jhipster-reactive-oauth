@@ -1,6 +1,5 @@
 package com.mycompany.myapp.service;
 
-import com.mycompany.myapp.GeneratedByJHipster;
 import com.mycompany.myapp.config.Constants;
 import com.mycompany.myapp.domain.Authority;
 import com.mycompany.myapp.domain.User;
@@ -8,9 +7,7 @@ import com.mycompany.myapp.repository.AuthorityRepository;
 import com.mycompany.myapp.repository.UserRepository;
 import com.mycompany.myapp.security.SecurityUtils;
 import com.mycompany.myapp.service.dto.UserDTO;
-import java.time.Instant;
-import java.util.*;
-import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
@@ -23,11 +20,14 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
+import java.time.Instant;
+import java.util.*;
+import java.util.stream.Collectors;
+
 /**
  * Service class for managing users.
  */
 @Service
-@GeneratedByJHipster
 public class UserService {
 
     private final Logger log = LoggerFactory.getLogger(UserService.class);
@@ -51,38 +51,32 @@ public class UserService {
      * @param imageUrl  image URL of user.
      */
     public Mono<Void> updateUser(String firstName, String lastName, String email, String langKey, String imageUrl) {
-        return SecurityUtils
-            .getCurrentUserLogin()
+        return SecurityUtils.getCurrentUserLogin()
             .flatMap(userRepository::findOneByLogin)
-            .flatMap(
-                user -> {
-                    user.setFirstName(firstName);
-                    user.setLastName(lastName);
-                    if (email != null) {
-                        user.setEmail(email.toLowerCase());
-                    }
-                    user.setLangKey(langKey);
-                    user.setImageUrl(imageUrl);
-                    return saveUser(user);
+            .flatMap(user -> {
+                user.setFirstName(firstName);
+                user.setLastName(lastName);
+                if (email != null) {
+                    user.setEmail(email.toLowerCase());
                 }
-            )
+                user.setLangKey(langKey);
+                user.setImageUrl(imageUrl);
+                return saveUser(user);
+            })
             .doOnNext(user -> log.debug("Changed Information for User: {}", user))
             .then();
     }
 
     private Mono<User> saveUser(User user) {
-        return SecurityUtils
-            .getCurrentUserLogin()
+        return SecurityUtils.getCurrentUserLogin()
             .switchIfEmpty(Mono.just(Constants.SYSTEM_ACCOUNT))
-            .flatMap(
-                login -> {
-                    if (user.getCreatedBy() == null) {
-                        user.setCreatedBy(login);
-                    }
-                    user.setLastModifiedBy(login);
-                    return userRepository.save(user);
+            .flatMap(login -> {
+                if (user.getCreatedBy() == null) {
+                    user.setCreatedBy(login);
                 }
-            );
+                user.setLastModifiedBy(login);
+                return userRepository.save(user);
+            });
     }
 
     public Flux<UserDTO> getAllManagedUsers(Pageable pageable) {
@@ -97,6 +91,7 @@ public class UserService {
         return userRepository.findOneByLogin(login);
     }
 
+
     /**
      * Gets a list of all the authorities.
      * @return a list of all the authorities.
@@ -107,54 +102,43 @@ public class UserService {
 
     private Mono<User> syncUserWithIdP(Map<String, Object> details, User user) {
         // save authorities in to sync user roles/groups between IdP and JHipster's local database
-        Collection<String> userAuthorities = user.getAuthorities().stream().map(Authority::getName).collect(Collectors.toList());
+        Collection<String> userAuthorities =
+            user.getAuthorities().stream().map(Authority::getName).collect(Collectors.toList());
 
-        return getAuthorities()
-            .collectList()
-            .flatMapMany(
-                dbAuthorities -> {
-                    List<Authority> authoritiesToSave = userAuthorities
-                        .stream()
-                        .filter(authority -> !dbAuthorities.contains(authority))
-                        .map(
-                            authority -> {
-                                Authority authorityToSave = new Authority();
-                                authorityToSave.setName(authority);
-                                return authorityToSave;
-                            }
-                        )
-                        .collect(Collectors.toList());
-                    return Flux.fromIterable(authoritiesToSave);
-                }
-            )
+        return getAuthorities().collectList()
+            .flatMapMany(dbAuthorities -> {
+                List<Authority> authoritiesToSave = userAuthorities.stream()
+                    .filter(authority -> !dbAuthorities.contains(authority))
+                    .map(authority -> {
+                        Authority authorityToSave = new Authority();
+                        authorityToSave.setName(authority);
+                        return authorityToSave;
+                    })
+                    .collect(Collectors.toList());
+                return Flux.fromIterable(authoritiesToSave);
+            })
             .doOnNext(authority -> log.debug("Saving authority '{}' in local database", authority))
             .flatMap(authorityRepository::save)
             .then(userRepository.findOneByLogin(user.getLogin()))
             .switchIfEmpty(userRepository.save(user))
-            .flatMap(
-                existingUser -> {
-                    // if IdP sends last updated information, use it to determine if an update should happen
-                    if (details.get("updated_at") != null) {
-                        Instant dbModifiedDate = existingUser.getLastModifiedDate();
-                        Instant idpModifiedDate = (Instant) details.get("updated_at");
-                        if (idpModifiedDate.isAfter(dbModifiedDate)) {
-                            log.debug("Updating user '{}' in local database", user.getLogin());
-                            return updateUser(
-                                user.getFirstName(),
-                                user.getLastName(),
-                                user.getEmail(),
-                                user.getLangKey(),
-                                user.getImageUrl()
-                            );
-                        }
-                        // no last updated info, blindly update
-                    } else {
+            .flatMap(existingUser -> {
+                // if IdP sends last updated information, use it to determine if an update should happen
+                if (details.get("updated_at") != null) {
+                    Instant dbModifiedDate = existingUser.getLastModifiedDate();
+                    Instant idpModifiedDate = (Instant) details.get("updated_at");
+                    if (idpModifiedDate.isAfter(dbModifiedDate)) {
                         log.debug("Updating user '{}' in local database", user.getLogin());
-                        return updateUser(user.getFirstName(), user.getLastName(), user.getEmail(), user.getLangKey(), user.getImageUrl());
+                        return updateUser(user.getFirstName(), user.getLastName(), user.getEmail(),
+                            user.getLangKey(), user.getImageUrl());
                     }
-                    return Mono.empty();
+                    // no last updated info, blindly update
+                } else {
+                    log.debug("Updating user '{}' in local database", user.getLogin());
+                    return updateUser(user.getFirstName(), user.getLastName(), user.getEmail(),
+                        user.getLangKey(), user.getImageUrl());
                 }
-            )
+                return Mono.empty();
+            })
             .thenReturn(user);
     }
 
@@ -175,20 +159,14 @@ public class UserService {
             throw new IllegalArgumentException("AuthenticationToken is not OAuth2 or JWT!");
         }
         User user = getUser(attributes);
-        user.setAuthorities(
-            authToken
-                .getAuthorities()
-                .stream()
-                .map(GrantedAuthority::getAuthority)
-                .map(
-                    authority -> {
-                        Authority auth = new Authority();
-                        auth.setName(authority);
-                        return auth;
-                    }
-                )
-                .collect(Collectors.toSet())
-        );
+        user.setAuthorities(authToken.getAuthorities().stream()
+            .map(GrantedAuthority::getAuthority)
+            .map(authority -> {
+                Authority auth = new Authority();
+                auth.setName(authority);
+                return auth;
+            })
+            .collect(Collectors.toSet()));
         return syncUserWithIdP(attributes, user).flatMap(u -> Mono.just(new UserDTO(u)));
     }
 

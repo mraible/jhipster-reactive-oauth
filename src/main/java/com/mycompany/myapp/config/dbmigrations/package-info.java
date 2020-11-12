@@ -1,4 +1,4 @@
 /**
- * MongoDB database migrations using Mongock.
+ * MongoDB database migrations using MongoBee.
  */
 package com.mycompany.myapp.config.dbmigrations;

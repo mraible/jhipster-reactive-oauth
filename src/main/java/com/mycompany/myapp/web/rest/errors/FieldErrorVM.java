@@ -1,9 +1,7 @@
 package com.mycompany.myapp.web.rest.errors;
 
-import com.mycompany.myapp.GeneratedByJHipster;
 import java.io.Serializable;
 
-@GeneratedByJHipster
 public class FieldErrorVM implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -31,4 +29,5 @@ public class FieldErrorVM implements Serializable {
     public String getMessage() {
         return message;
     }
+
 }

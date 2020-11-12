@@ -1,33 +1,41 @@
 package com.mycompany.myapp.config;
 
-import com.github.cloudyrock.mongock.driver.mongodb.springdata.v3.SpringDataMongo3Driver;
-import com.github.cloudyrock.spring.v5.MongockSpring5;
-import com.github.cloudyrock.spring.v5.MongockSpring5.MongockInitializingBeanRunner;
-import com.mycompany.myapp.GeneratedByJHipster;
+import com.github.mongobee.Mongobee;
+
 import io.github.jhipster.config.JHipsterConstants;
 import io.github.jhipster.domain.util.JSR310DateConverters.*;
-import java.util.ArrayList;
-import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.Cloud;
+import org.springframework.cloud.CloudException;
 import org.springframework.cloud.config.java.AbstractCloudConfig;
-import org.springframework.context.ApplicationContext;
+import org.springframework.cloud.service.ServiceInfo;
+import org.springframework.cloud.service.common.MongoServiceInfo;
 import org.springframework.context.annotation.*;
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.data.mongodb.MongoDbFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
 import org.springframework.data.mongodb.core.mapping.event.ValidatingMongoEventListener;
 import org.springframework.data.mongodb.repository.config.EnableReactiveMongoRepositories;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
+import java.util.ArrayList;
+import java.util.List;
+
+
 @Configuration
 @EnableReactiveMongoRepositories("com.mycompany.myapp.repository")
 @Profile(JHipsterConstants.SPRING_PROFILE_CLOUD)
-@GeneratedByJHipster
 public class CloudDatabaseConfiguration extends AbstractCloudConfig {
 
     private final Logger log = LoggerFactory.getLogger(CloudDatabaseConfiguration.class);
+
+    @Bean
+    public MongoDbFactory mongoFactory() {
+        return connectionFactory().mongoDbFactory();
+    }
 
     @Bean
     public LocalValidatorFactoryBean validator() {
@@ -49,24 +57,21 @@ public class CloudDatabaseConfiguration extends AbstractCloudConfig {
     }
 
     @Bean
-    public MongockInitializingBeanRunner mongockInitializingBeanRunner(
-        ApplicationContext springContext,
-        MongoTemplate mongoTemplate,
-        @Value("${mongock.lockAcquiredForMinutes:5}") long lockAcquiredForMinutes,
-        @Value("${mongock.maxWaitingForLockMinutes:3}") long maxWaitingForLockMinutes,
-        @Value("${mongock.maxTries:3}") int maxTries
-    ) {
-        SpringDataMongo3Driver driver = SpringDataMongo3Driver.withLockSetting(
-            mongoTemplate,
-            lockAcquiredForMinutes,
-            maxWaitingForLockMinutes,
-            maxTries
-        );
-        return MongockSpring5
-            .builder()
-            .setDriver(driver)
-            .addChangeLogsScanPackage("com.mycompany.myapp.config.dbmigrations")
-            .setSpringContext(springContext)
-            .buildInitializingBeanRunner();
+    public Mongobee mongobee(MongoDbFactory mongoDbFactory, MongoTemplate mongoTemplate, Cloud cloud) {
+        log.debug("Configuring Cloud Mongobee");
+        List<ServiceInfo> matchingServiceInfos = cloud.getServiceInfos(MongoDbFactory.class);
+
+        if (matchingServiceInfos.size() != 1) {
+            throw new CloudException("No unique service matching MongoDbFactory found. Expected 1, found "
+                + matchingServiceInfos.size());
+        }
+        MongoServiceInfo info = (MongoServiceInfo) matchingServiceInfos.get(0);
+        Mongobee mongobee = new Mongobee(info.getUri());
+        mongobee.setDbName(mongoDbFactory.getDb().getName());
+        mongobee.setMongoTemplate(mongoTemplate);
+        // package to scan for migrations
+        mongobee.setChangeLogsScanPackage("com.mycompany.myapp.config.dbmigrations");
+        mongobee.setEnabled(true);
+        return mongobee;
     }
 }

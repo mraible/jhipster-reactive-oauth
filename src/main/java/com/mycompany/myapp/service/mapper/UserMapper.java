@@ -1,12 +1,13 @@
 package com.mycompany.myapp.service.mapper;
 
-import com.mycompany.myapp.GeneratedByJHipster;
 import com.mycompany.myapp.domain.Authority;
 import com.mycompany.myapp.domain.User;
 import com.mycompany.myapp.service.dto.UserDTO;
+
+import org.springframework.stereotype.Service;
+
 import java.util.*;
 import java.util.stream.Collectors;
-import org.springframework.stereotype.Service;
 
 /**
  * Mapper for the entity {@link User} and its DTO called {@link UserDTO}.
@@ -15,11 +16,13 @@ import org.springframework.stereotype.Service;
  * support is still in beta, and requires a manual step with an IDE.
  */
 @Service
-@GeneratedByJHipster
 public class UserMapper {
 
     public List<UserDTO> usersToUserDTOs(List<User> users) {
-        return users.stream().filter(Objects::nonNull).map(this::userToUserDTO).collect(Collectors.toList());
+        return users.stream()
+            .filter(Objects::nonNull)
+            .map(this::userToUserDTO)
+            .collect(Collectors.toList());
     }
 
     public UserDTO userToUserDTO(User user) {
@@ -27,7 +30,10 @@ public class UserMapper {
     }
 
     public List<User> userDTOsToUsers(List<UserDTO> userDTOs) {
-        return userDTOs.stream().filter(Objects::nonNull).map(this::userDTOToUser).collect(Collectors.toList());
+        return userDTOs.stream()
+            .filter(Objects::nonNull)
+            .map(this::userDTOToUser)
+            .collect(Collectors.toList());
     }
 
     public User userDTOToUser(UserDTO userDTO) {
@@ -49,21 +55,16 @@ public class UserMapper {
         }
     }
 
+
     private Set<Authority> authoritiesFromStrings(Set<String> authoritiesAsString) {
         Set<Authority> authorities = new HashSet<>();
 
         if (authoritiesAsString != null) {
-            authorities =
-                authoritiesAsString
-                    .stream()
-                    .map(
-                        string -> {
-                            Authority auth = new Authority();
-                            auth.setName(string);
-                            return auth;
-                        }
-                    )
-                    .collect(Collectors.toSet());
+            authorities = authoritiesAsString.stream().map(string -> {
+                Authority auth = new Authority();
+                auth.setName(string);
+                return auth;
+            }).collect(Collectors.toSet());
         }
 
         return authorities;
